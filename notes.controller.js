@@ -1,69 +1,60 @@
 const fs = require('fs/promises');
 const path = require('path');
-const chalk = require('chalk');
 
 const notesPath = path.join(__dirname, 'db.json');
 
+// Функция для добавления новой заметки
 async function addNote(title) {
   const notes = await getNotes();
-  const note = {
-    title,
-    id: Date.now().toString(),
-  };
+  const newNote = { id: Date.now().toString(), title };
 
-  notes.push(note);
-
+  notes.push(newNote);
   await saveNotes(notes);
-  console.log(chalk.bgGreen('Note was added!'));
 }
 
+// Функция для получения всех заметок
 async function getNotes() {
-  const notes = await fs.readFile(notesPath, { encoding: 'utf-8' });
-  return Array.isArray(JSON.parse(notes)) ? JSON.parse(notes) : [];
+  try {
+    const data = await fs.readFile(notesPath, { encoding: 'utf-8' });
+    return JSON.parse(data);
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      await fs.writeFile(notesPath, JSON.stringify([]));
+      return [];
+    } else {
+      throw error;
+    }
+  }
 }
 
+// Функция для сохранения заметок в файл
 async function saveNotes(notes) {
-  await fs.writeFile(notesPath, JSON.stringify(notes));
+  await fs.writeFile(notesPath, JSON.stringify(notes, null, 2));
 }
 
-async function printNotes() {
-  const notes = await getNotes();
-
-  console.log(chalk.bgBlue('Here is the list of notes:'));
-  notes.forEach((note) => {
-    console.log(chalk.bgWhite(note.id), chalk.blue(note.title));
-  });
-}
-
+// Функция для удаления заметки по id
 async function removeNote(id) {
   const notes = await getNotes();
+  const filteredNotes = notes.filter((note) => note.id !== id);
 
-  const filtered = notes.filter((note) => note.id !== id);
-
-  if (filtered.length < notes.length) {
-    await saveNotes(filtered);
-    console.log(chalk.red(`Note with id="${id}" has been removed.`));
+  if (notes.length > filteredNotes.length) {
+    await saveNotes(filteredNotes);
     return true;
-  } else {
-    console.log(chalk.red(`Note with id="${id}" not found.`));
-    return false;
   }
+  return false;
 }
 
+// Функция для обновления заметки по id
 async function updateNote(id, newTitle) {
   const notes = await getNotes();
+  const index = notes.findIndex((note) => note.id === id);
 
-  const noteIndex = notes.findIndex((note) => note.id === id);
-  if (noteIndex !== -1) {
-    notes[noteIndex].title = newTitle;
-
+  if (index !== -1) {
+    notes[index].title = newTitle;
     await saveNotes(notes);
-    console.log(chalk.bgYellow(`Note with id="${id}" has been updated.`));
     return true;
-  } else {
-    console.log(chalk.red(`Note with id="${id}" not found.`));
-    return false;
   }
+  return false;
 }
 
 module.exports = {
@@ -71,5 +62,4 @@ module.exports = {
   getNotes,
   removeNote,
   updateNote,
-  printNotes,
 };

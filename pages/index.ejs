@@ -27,7 +27,6 @@
         <div class="form-group mb-2">
           <input type="text" class="form-control" name="title" required />
         </div>
-
         <button class="btn btn-primary" type="submit">Create!</button>
       </form>
 
@@ -40,11 +39,23 @@
             data-id="<%= note.id %>"
           >
             <span class="note-title"><%= note.title %></span>
+            <input
+              type="text"
+              class="form-control edit-note-title"
+              value="<%= note.title %>"
+              style="display: none"
+            />
 
-            <!-- Кнопка Редактировать -->
-            <button class="btn btn-primary edit-note">Редактировать</button>
+            <div class="btn-group" role="group">
+              <button class="btn btn-primary edit-note">Редактировать</button>
+              <button class="btn btn-success save-note" style="display: none">
+                Сохранить
+              </button>
+              <button class="btn btn-danger cancel-note" style="display: none">
+                Отменить
+              </button>
+            </div>
 
-            <!-- Кнопка Удаления -->
             <button class="btn btn-danger delete-note" data-id="<%= note.id %>">
               &times;
             </button>
