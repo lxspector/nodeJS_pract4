@@ -40,11 +40,16 @@ async function removeNote(id) {
 
   const filtered = notes.filter((note) => note.id !== id);
 
-  await saveNotes(filtered);
-  console.log(chalk.red(`Note with id="${id}" has been removed.`));
+  if (filtered.length < notes.length) {
+    await saveNotes(filtered);
+    console.log(chalk.red(`Note with id="${id}" has been removed.`));
+    return true;
+  } else {
+    console.log(chalk.red(`Note with id="${id}" not found.`));
+    return false;
+  }
 }
 
-// Функция для обновления заметки
 async function updateNote(id, newTitle) {
   const notes = await getNotes();
 
@@ -54,6 +59,10 @@ async function updateNote(id, newTitle) {
 
     await saveNotes(notes);
     console.log(chalk.bgYellow(`Note with id="${id}" has been updated.`));
+    return true;
+  } else {
+    console.log(chalk.red(`Note with id="${id}" not found.`));
+    return false;
   }
 }
 
@@ -62,4 +71,5 @@ module.exports = {
   getNotes,
   removeNote,
   updateNote,
+  printNotes,
 };
